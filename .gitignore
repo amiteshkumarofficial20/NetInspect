@@ -1,0 +1,17 @@
+# Build/compiled output files
+dpi_engine
+dpi_engine.exe
+
+# Generated output PCAP files
+output.pcap
+blocked.pcap
+unblocked.pcap
+
+# VS Code local configuration files
+.vscode/
+
+# Build/output directories
+build/
+
+# Local Windows setup file
+WINDOWS_SETUP.md
