@@ -6,6 +6,8 @@ dpi_engine.exe
 output.pcap
 blocked.pcap
 unblocked.pcap
+youtube_blocked.pcap
+blocked_output.pcap
 
 # VS Code local configuration files
 .vscode/
