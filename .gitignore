@@ -1,19 +1,28 @@
-# Build/compiled output files
+# Build / Compiled Output Files
 dpi_engine
 dpi_engine.exe
 
-# Generated output PCAP files
+# Generated Output PCAP Files
 output.pcap
-blocked.pcap
-unblocked.pcap
-youtube_blocked.pcap
 blocked_output.pcap
+youtube_blocked.pcap
 
-# VS Code local configuration files
+# VS Code Local Configuration Files
 .vscode/
 
-# Build/output directories
+# Build / Output Directories
 build/
 
-# Local Windows setup file
+# Local Windows Setup File
 WINDOWS_SETUP.md
+
+# Runtime Storage
+storage/uploads/*
+storage/outputs/*
+storage/results/*
+storage/reports/*
+
+!storage/uploads/.gitkeep
+!storage/outputs/.gitkeep
+!storage/results/.gitkeep
+!storage/reports/.gitkeep
