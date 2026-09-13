@@ -34,3 +34,5 @@ storage/reports/*
 !storage/outputs/.gitkeep
 !storage/results/.gitkeep
 !storage/reports/.gitkeep
+# Backend Build Output
+backend/dist/
