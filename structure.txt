@@ -2,48 +2,138 @@ Folder PATH listing for volume Windows
 Volume serial number is 48C3-D98D
 C:.
 |   .gitignore
-|   blocked.pcap
 |   CMakeLists.txt
 |   dpi_engine
 |   dpi_engine.exe
-|   generate_test_pcap.py
 |   LICENSE
-|   output.pcap
+|   pacman
+|   PROJECT_BLUEPRINT.md
+|   project_structure.md
 |   README.md
 |   structure.txt
-|   test_dpi.pcap
-|   unblocked.pcap
-|   WINDOWS_SETUP.md
 |   
 +---.vscode
 |       c_cpp_properties.json
 |       
-+---include
-|       connection_tracker.h
-|       dpi_engine.h
-|       fast_path.h
-|       load_balancer.h
-|       packet_parser.h
-|       pcap_reader.h
-|       platform.h
-|       rule_manager.h
-|       sni_extractor.h
-|       thread_safe_queue.h
-|       types.h
++---backend
+|   \---src
+|       +---controllers
+|       +---middleware
+|       +---models
+|       +---routes
+|       +---services
+|       +---types
+|       \---utils
++---build
+|   |   .ninja_deps
+|   |   .ninja_log
+|   |   build.ninja
+|   |   CMakeCache.txt
+|   |   cmake_install.cmake
+|   |   compile_commands.json
+|   |   
+|   +---CMakeFiles
+|   |   |   cmake.check_cache
+|   |   |   CMakeConfigureLog.yaml
+|   |   |   InstallScripts.json
+|   |   |   rules.ninja
+|   |   |   TargetDirectories.txt
+|   |   |   
+|   |   +---4.4.2
+|   |   |   |   CMakeCXXCompiler.cmake
+|   |   |   |   CMakeDetermineCompilerABI_CXX.bin
+|   |   |   |   CMakeRCCompiler.cmake
+|   |   |   |   CMakeSystem.cmake
+|   |   |   |   
+|   |   |   \---CompilerIdCXX
+|   |   |       |   a.exe
+|   |   |       |   CMakeCXXCompilerId.cpp
+|   |   |       |   
+|   |   |       \---tmp
+|   |   +---CMakeScratch
+|   |   \---pkgRedirects
+|   \---engine
+|       |   cmake_install.cmake
+|       |   dpi_engine.exe
+|       |   
+|       \---CMakeFiles
+|           \---dpi_engine.dir
+|               \---src
+|                       connection_tracker.cpp.obj
+|                       dpi_engine.cpp.obj
+|                       dpi_mt.cpp.obj
+|                       fast_path.cpp.obj
+|                       load_balancer.cpp.obj
+|                       packet_parser.cpp.obj
+|                       pcap_reader.cpp.obj
+|                       rule_manager.cpp.obj
+|                       sni_extractor.cpp.obj
+|                       types.cpp.obj
+|                       
++---database
++---docs
+|   +---api
+|   +---architecture
+|   \---development
+|           setup.md
+|           
++---engine
+|   |   CMakeLists.txt
+|   |   
+|   +---include
+|   |       connection_tracker.h
+|   |       dpi_engine.h
+|   |       fast_path.h
+|   |       load_balancer.h
+|   |       packet_parser.h
+|   |       pcap_reader.h
+|   |       platform.h
+|   |       rule_manager.h
+|   |       sni_extractor.h
+|   |       thread_safe_queue.h
+|   |       types.h
+|   |       
+|   +---src
+|   |       connection_tracker.cpp
+|   |       dpi_engine.cpp
+|   |       dpi_mt.cpp
+|   |       fast_path.cpp
+|   |       load_balancer.cpp
+|   |       main.cpp
+|   |       main_dpi.cpp
+|   |       main_simple.cpp
+|   |       main_working.cpp
+|   |       packet_parser.cpp
+|   |       pcap_reader.cpp
+|   |       rule_manager.cpp
+|   |       sni_extractor.cpp
+|   |       types.cpp
+|   |       
+|   \---tests
++---frontend
+|   \---src
+|       +---components
+|       +---hooks
+|       +---layouts
+|       +---pages
+|       +---services
+|       +---types
+|       \---utils
++---samples
+|       blocked.pcap
+|       test_dpi.pcap
+|       unblocked.pcap
 |       
-\---src
-        connection_tracker.cpp
-        dpi_engine.cpp
-        dpi_mt.cpp
-        fast_path.cpp
-        load_balancer.cpp
-        main.cpp
-        main_dpi.cpp
-        main_simple.cpp
-        main_working.cpp
-        packet_parser.cpp
-        pcap_reader.cpp
-        rule_manager.cpp
-        sni_extractor.cpp
-        types.cpp
-        
++---scripts
+|       generate_test_pcap.py
+|       
+\---storage
+    +---outputs
+    |       blocked_output.pcap
+    |       output.pcap
+    |       test_output.pcap
+    |       youtube_blocked.pcap
+    |       
+    +---reports
+    +---results
+    \---uploads

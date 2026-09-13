@@ -1,27 +1,35 @@
-# Build / Compiled Output Files
+# Dependencies
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+
+# CMake / Build
+build/
+engine/build/
+
+# Compiled binaries
+*.exe
 dpi_engine
 dpi_engine.exe
 
-# Generated Output PCAP Files
+# Generated PCAP files
 output.pcap
 blocked_output.pcap
 youtube_blocked.pcap
 
-# VS Code Local Configuration Files
+# VS Code local configuration
 .vscode/
 
-# Build / Output Directories
-build/
-
-# Local Windows Setup File
+# Local Windows setup
 WINDOWS_SETUP.md
 
-# Runtime Storage
+# Runtime storage
 storage/uploads/*
 storage/outputs/*
 storage/results/*
 storage/reports/*
 
+# Keep runtime directories in Git
 !storage/uploads/.gitkeep
 !storage/outputs/.gitkeep
 !storage/results/.gitkeep
