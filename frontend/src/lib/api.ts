@@ -85,11 +85,18 @@ export async function checkHealth(): Promise<boolean> {
  * Returns a fully normalized AnalysisResult — no union types.
  * Throws an Error with a human-readable message on failure.
  */
-export async function analyzePcap(file: File): Promise<AnalysisResult> {
+export async function analyzePcap(
+  file: File,
+  blockApp?: string,
+): Promise<AnalysisResult> {
   const formData = new FormData();
   formData.append('pcap', file);
 
-  const res = await fetch(`${API_BASE}/analyze`, {
+  const params = blockApp && blockApp !== 'None'
+    ? `?blockApp=${encodeURIComponent(blockApp)}`
+    : '';
+
+  const res = await fetch(`${API_BASE}/analyze${params}`, {
     method: 'POST',
     body: formData,
   });
@@ -100,7 +107,7 @@ export async function analyzePcap(file: File): Promise<AnalysisResult> {
       const errData = await res.json();
       if (errData?.error) message = errData.error;
     } catch {
-      // ignore JSON parse error; keep the default message
+      // ignore JSON parse error
     }
     throw new Error(message);
   }
@@ -120,11 +127,11 @@ export async function analyzePcap(file: File): Promise<AnalysisResult> {
     applications: normalizeApplications(raw.applications),
     domains: Array.isArray(raw.domains) ? raw.domains : [],
     flows: Array.isArray(raw.flows)
-  ? raw.flows.map((flow) => ({
-      ...flow,
-      protocol: normalizeProtocol(flow.protocol),
-    }))
-  : [],
+      ? raw.flows.map((flow) => ({
+          ...flow,
+          protocol: normalizeProtocol(flow.protocol),
+        }))
+      : [],
   };
 }
 

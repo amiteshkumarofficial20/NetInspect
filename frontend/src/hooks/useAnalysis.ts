@@ -13,7 +13,7 @@ export interface AnalysisState {
 }
 
 export interface UseAnalysisReturn extends AnalysisState {
-  analyze: (file: File) => Promise<void>;
+  analyze: (file: File, blockApp?: string) => Promise<void>;
   reset: () => void;
   formattedAnalysisTime: string | null;
 }
@@ -37,7 +37,7 @@ const INITIAL_STATE: AnalysisState = {
 export function useAnalysis(): UseAnalysisReturn {
   const [state, setState] = useState<AnalysisState>(INITIAL_STATE);
 
-  const analyze = useCallback(async (file: File) => {
+  const analyze = useCallback(async (file: File, blockApp?: string) => {
     setState((prev) => ({
       ...prev,
       status: 'loading',
@@ -46,7 +46,7 @@ export function useAnalysis(): UseAnalysisReturn {
     }));
 
     try {
-      const result = await analyzePcap(file);
+      const result = await analyzePcap(file, blockApp);
       setState({
         status: 'success',
         data: result,

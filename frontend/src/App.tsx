@@ -76,12 +76,12 @@ function AppInner() {
 
   // Handle file upload from Topbar
   const handleAnalyze = useCallback(
-    (file: File) => {
-      setSearch(''); // clear search on new analysis
-      analyze(file);
-    },
-    [analyze],
-  );
+  (file: File, blockApp?: string) => {
+    setSearch('');
+    analyze(file, blockApp);
+  },
+  [analyze],
+);
 
   // Handle chip clear
   const handleClearFile = useCallback(() => {
