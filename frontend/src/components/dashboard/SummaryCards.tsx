@@ -140,21 +140,27 @@ export function SummaryCards({
 
           {/* Toggle switch */}
           <button
-            role="switch"
-            aria-checked={glowEnabled}
-            onClick={() => onGlowToggle(!glowEnabled)}
-            className={cn(
-              'relative flex-shrink-0 w-10 h-6 rounded-full transition-colors duration-200',
-              glowEnabled ? 'bg-accent' : isLight ? 'bg-gray-200' : 'bg-white/10',
-            )}
-          >
-            <span
-              className={cn(
-                'absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200',
-                glowEnabled ? 'translate-x-5' : 'translate-x-1',
-              )}
-            />
-          </button>
+          type="button"
+          role="switch"
+          aria-checked={glowEnabled}
+          aria-label="Toggle Visual Glow"
+          onClick={() => onGlowToggle(!glowEnabled)}
+          className={cn(
+          'relative flex-shrink-0 w-11 h-6 rounded-full border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent/40',
+          glowEnabled
+          ? 'bg-accent border-accent'
+          : isLight
+          ? 'bg-gray-300 border-gray-300'
+          : 'bg-white/10 border-white/10',
+          )}
+        >
+  <span
+    className={cn(
+      'absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-200',
+      glowEnabled ? 'translate-x-5' : 'translate-x-0',
+    )}
+  />
+</button>
         </div>
       </div>
     </div>
