@@ -1,6 +1,10 @@
-import { useMemo } from 'react';
-import { FileText, CheckCircle, Upload, Zap } from 'lucide-react';
-import type { AnalysisResult, AnalysisStatus, DomainCount, TopTalker } from '../types';
+import { useRef, useState, useMemo } from 'react';
+import {
+  FileText, CheckCircle, Upload, Zap, Search, Sun, Moon,
+} from 'lucide-react';
+import type {
+  AnalysisResult, AnalysisStatus, DomainCount, TopTalker, EngineStatus,
+} from '../types';
 import { StatCards } from '../components/dashboard/StatCards';
 import { TrafficVisualization } from '../components/dashboard/TrafficVisualization';
 import { DonutChart } from '../components/dashboard/DonutChart';
@@ -22,11 +26,28 @@ interface DashboardProps {
   formattedAnalysisTime: string | null;
   fileName: string | null;
   search: string;
+  onSearchChange: (v: string) => void;
   onClearSearch: () => void;
   glowEnabled: boolean;
   onGlowToggle: (v: boolean) => void;
   isLight: boolean;
+  engineStatus: EngineStatus;
+  onAnalyze: (file: File, blockApp?: string) => void;
+  onAnalyzeNewTraffic: (blockApp?: string) => void;
+  isLoading: boolean;
+  onToggleTheme: () => void;
 }
+
+const ENGINE_LABEL: Record<EngineStatus, { dot: string; label: string; color: string }> = {
+  checking: { dot: 'bg-warn animate-pulse', label: 'Checking...', color: 'text-warn' },
+  online:   { dot: 'bg-success',            label: 'Engine Online', color: 'text-success' },
+  offline:  { dot: 'bg-danger',             label: 'Engine Offline', color: 'text-danger' },
+};
+
+const BLOCK_APP_OPTIONS = [
+  'None', 'YouTube', 'Facebook', 'Instagram', 'Twitter/X',
+  'Discord', 'Telegram', 'TikTok', 'Spotify',
+];
 
 export function Dashboard({
   data,
@@ -36,33 +57,36 @@ export function Dashboard({
   formattedAnalysisTime,
   fileName,
   search,
+  onSearchChange,
   onClearSearch,
   glowEnabled,
   onGlowToggle,
   isLight,
+  engineStatus,
+  onAnalyze,
+  onAnalyzeNewTraffic,
+  isLoading,
+  onToggleTheme,
 }: DashboardProps) {
-  const isLoading = status === 'loading';
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [blockApp, setBlockApp] = useState('None');
+  const eng = ENGINE_LABEL[engineStatus];
 
-  /* ── Derived data (client-side aggregation) ── */
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) { onAnalyze(file, blockApp); e.target.value = ''; }
+  };
+
+  /* ── Derived data ── */
 
   const filteredFlows = useMemo(() => {
     if (!data) return [];
     const q = search.trim().toLowerCase();
     if (!q) return data.flows;
-
     return data.flows.filter((f) =>
-      [
-        f.sourceIp,
-        f.destinationIp,
-        f.application,
-        f.domain,
-        f.protocol,
-        String(f.sourcePort),
-        String(f.destinationPort),
-      ]
-        .join(' ')
-        .toLowerCase()
-        .includes(q),
+      [f.sourceIp, f.destinationIp, f.application, f.domain,
+        f.protocol, String(f.sourcePort), String(f.destinationPort)]
+        .join(' ').toLowerCase().includes(q),
     );
   }, [data, search]);
 
@@ -75,13 +99,9 @@ export function Dashboard({
     if (!data) return [];
     const map = new Map<string, TopTalker>();
     data.flows.forEach((f) => {
-      const existing = map.get(f.sourceIp);
-      if (existing) {
-        existing.bytes += f.bytes;
-        existing.packets += f.packets;
-      } else {
-        map.set(f.sourceIp, { sourceIp: f.sourceIp, bytes: f.bytes, packets: f.packets });
-      }
+      const e = map.get(f.sourceIp);
+      if (e) { e.bytes += f.bytes; e.packets += f.packets; }
+      else map.set(f.sourceIp, { sourceIp: f.sourceIp, bytes: f.bytes, packets: f.packets });
     });
     return Array.from(map.values()).sort((a, b) => b.bytes - a.bytes);
   }, [data]);
@@ -92,16 +112,12 @@ export function Dashboard({
     data.domains.forEach((d) => {
       const key = `${d.domain}|${d.application}`;
       const ex = map.get(key);
-      if (ex) {
-        ex.packets += 1;
-      } else {
-        map.set(key, { domain: d.domain, application: d.application, packets: 1 });
-      }
+      if (ex) ex.packets += 1;
+      else map.set(key, { domain: d.domain, application: d.application, packets: 1 });
     });
     return Array.from(map.values()).sort((a, b) => b.packets - a.packets);
   }, [data]);
 
-  /* Filter 4-up tables by search query */
   const filteredApps = useMemo(() => {
     if (!data) return [];
     const q = search.trim().toLowerCase();
@@ -123,6 +139,7 @@ export function Dashboard({
 
   return (
     <div className="space-y-4">
+
       {/* ── Error banner ── */}
       {error && (
         <div className="rounded-xl bg-danger/10 border border-danger/30 px-4 py-3 text-sm text-danger flex items-center gap-2">
@@ -131,8 +148,8 @@ export function Dashboard({
         </div>
       )}
 
-      {/* ── Page header row ── */}
-      <div className="flex items-start justify-between gap-4">
+      {/* ── Page heading + theme toggle ── */}
+      <div className="flex items-start justify-between">
         <div>
           <h1 className={cn('text-2xl font-bold', isLight ? 'text-gray-900' : 'text-white')}>
             Network Intelligence Dashboard
@@ -141,121 +158,182 @@ export function Dashboard({
             Real traffic. Real analysis. Complete visibility.
           </p>
         </div>
+        <button
+          onClick={onToggleTheme}
+          className={cn(
+            'w-8 h-8 flex items-center justify-center rounded-lg transition-colors mt-0.5',
+            isLight
+              ? 'text-gray-500 hover:bg-gray-200 hover:text-gray-700'
+              : 'text-muted hover:bg-white/5 hover:text-white',
+          )}
+          aria-label="Toggle theme"
+        >
+          {isLight ? <Moon size={16} /> : <Sun size={16} />}
+        </button>
+      </div>
+
+      {/* ── Control row: Search | Engine | Block App | Last Analyzed card ── */}
+      <div className="flex items-center gap-3">
+
+        {/* Search */}
+        <div className="relative flex-1">
+          <Search
+            size={14}
+            className={cn('absolute left-3 top-1/2 -translate-y-1/2', isLight ? 'text-gray-400' : 'text-muted')}
+          />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder="Search applications, domains, IPs, or flows..."
+            className={cn(
+              'w-full h-9 pl-9 pr-4 rounded-xl text-sm outline-none transition-colors',
+              'focus:ring-1 focus:ring-accent/50',
+              isLight
+                ? 'bg-gray-100 text-gray-900 placeholder:text-gray-400 border border-gray-200 focus:bg-white'
+                : 'bg-navy-750 text-white placeholder:text-muted/60 border border-white/5 focus:bg-navy-700',
+            )}
+          />
+        </div>
+
+        {/* Engine status */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="relative">
+            <span className={cn('block w-2 h-2 rounded-full', eng.dot)} />
+            {engineStatus === 'online' && (
+              <span className="absolute inset-0 rounded-full bg-success animate-ping opacity-60" />
+            )}
+          </div>
+          <div className="leading-tight">
+            <div className={cn('text-xs font-semibold', eng.color)}>{eng.label}</div>
+            <div className={cn('text-[9px]', isLight ? 'text-gray-400' : 'text-muted')}>C++ DPI Engine</div>
+          </div>
+        </div>
+
+        {/* Block App selector */}
+        <select
+          value={blockApp}
+          onChange={(e) => setBlockApp(e.target.value)}
+          disabled={isLoading}
+          className={cn(
+            'h-9 px-3 rounded-xl text-xs font-medium border outline-none flex-shrink-0',
+            'focus:ring-1 focus:ring-accent/50',
+            isLight ? 'bg-white text-gray-700 border-gray-200' : 'bg-navy-750 text-white border-white/5',
+          )}
+          aria-label="Block application"
+        >
+          {BLOCK_APP_OPTIONS.map((o) => (
+            <option key={o} value={o}>{o === 'None' ? 'Block App: None' : o}</option>
+          ))}
+        </select>
 
         {/* Last Analyzed File card */}
-        <div
-          className={cn(
-            'ni-card px-4 py-3 flex items-center gap-3 flex-shrink-0',
-          )}
-        >
-          <div
-            className={cn(
-              'w-8 h-8 rounded-lg flex items-center justify-center',
-              isLight ? 'bg-blue-50' : 'bg-accent/10',
-            )}
-          >
-            <FileText size={16} className="text-accent-light" />
+        <div className={cn('ni-card px-3 py-2 flex items-center gap-3 flex-shrink-0')}>
+          <div className={cn('w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0', isLight ? 'bg-blue-50' : 'bg-accent/10')}>
+            <FileText size={14} className="text-accent-light" />
           </div>
           <div className="min-w-0">
-            <p className={cn('text-[10px] mb-0.5', isLight ? 'text-gray-400' : 'text-muted')}>
-              Last Analyzed File
-            </p>
-            <p className={cn('text-xs font-semibold truncate max-w-[160px]', isLight ? 'text-gray-800' : 'text-white')}>
+            <p className={cn('text-[9px] mb-0.5', isLight ? 'text-gray-400' : 'text-muted')}>Last Analyzed</p>
+            <p className={cn('text-xs font-semibold truncate max-w-[140px]', isLight ? 'text-gray-800' : 'text-white')}>
               {fileName ?? 'No file analyzed'}
             </p>
-            <p className={cn('text-[10px]', isLight ? 'text-gray-400' : 'text-muted')}>
+            <p className={cn('text-[9px]', isLight ? 'text-gray-400' : 'text-muted')}>
               {formattedAnalysisTime ?? '—'}
             </p>
           </div>
           {status === 'success' && (
-            <div className="flex flex-col items-end gap-1.5 ml-2">
+            <div className="flex flex-col items-end gap-1 ml-1">
               <Badge variant="complete">
                 <CheckCircle size={9} className="mr-1" />
                 Analysis Complete
               </Badge>
-              <button className="text-[10px] text-accent-light hover:underline">
-                View Report →
-              </button>
+              <button className="text-[10px] text-accent-light hover:underline">View Report →</button>
             </div>
           )}
         </div>
       </div>
 
-      {/* ── Info cards: Analyze PCAP | Analyze New Traffic ── */}
+      {/* ── Info cards with action buttons ── */}
       <div className="grid grid-cols-2 gap-4">
-        {/* Card 1 — Analyze PCAP (blue accent) */}
-        <div
-          className={cn(
-            'flex items-start gap-3 px-4 py-3 rounded-xl border',
-            isLight
-              ? 'bg-white border-gray-200'
-              : 'bg-navy-750 border-white/5',
-          )}
-        >
-          <div
-            className={cn(
-              'w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5',
-              isLight ? 'bg-blue-50' : 'bg-accent/15',
-            )}
-          >
+
+        {/* Card 1 — Analyze PCAP */}
+        <div className={cn(
+          'flex items-center gap-3 px-4 py-3 rounded-xl border',
+          isLight ? 'bg-white border-gray-200' : 'bg-navy-750 border-white/5',
+        )}>
+          <div className={cn('w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0', isLight ? 'bg-blue-50' : 'bg-accent/15')}>
             <Upload size={18} className="text-accent-light" />
           </div>
-          <div className="min-w-0">
-            <p className={cn('text-sm font-semibold mb-1', isLight ? 'text-gray-900' : 'text-white')}>
-              Analyze PCAP
-            </p>
+          <div className="flex-1 min-w-0">
+            <p className={cn('text-sm font-semibold mb-0.5', isLight ? 'text-gray-900' : 'text-white')}>Analyze PCAP</p>
             <p className={cn('text-xs leading-relaxed', isLight ? 'text-gray-500' : 'text-muted')}>
-              Upload any PCAP file to analyze network traffic. This feature is primarily retained
-              for frontend and backend integration testing with sample captures.
+              Upload any PCAP file to analyze network traffic. Primarily for integration testing with sample captures.
             </p>
           </div>
-        </div>
-
-        {/* Card 2 — Analyze New Traffic (purple accent) */}
-        <div
-          className={cn(
-            'flex items-start gap-3 px-4 py-3 rounded-xl border',
-            isLight
-              ? 'bg-white border-gray-200'
-              : 'bg-navy-750 border-white/5',
-          )}
-        >
-          <div
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isLoading}
             className={cn(
-              'w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5',
-              isLight ? 'bg-purple-50' : 'bg-purple/15',
+              'flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold flex-shrink-0',
+              'bg-accent hover:bg-accent-dark transition-colors text-white',
+              isLoading && 'opacity-60 cursor-not-allowed',
             )}
           >
+            {isLoading
+              ? <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              : <Upload size={12} />}
+            <span>Analyze PCAP</span>
+          </button>
+        </div>
+
+        {/* Card 2 — Analyze New Traffic */}
+        <div className={cn(
+          'flex items-center gap-3 px-4 py-3 rounded-xl border',
+          isLight ? 'bg-white border-gray-200' : 'bg-navy-750 border-white/5',
+        )}>
+          <div className={cn('w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0', isLight ? 'bg-purple-50' : 'bg-purple/15')}>
             <Zap size={18} className="text-purple" />
           </div>
-          <div className="min-w-0">
-            <p className={cn('text-sm font-semibold mb-1', isLight ? 'text-gray-900' : 'text-white')}>
-              Analyze New Traffic
-            </p>
+          <div className="flex-1 min-w-0">
+            <p className={cn('text-sm font-semibold mb-0.5', isLight ? 'text-gray-900' : 'text-white')}>Analyze New Traffic</p>
             <p className={cn('text-xs leading-relaxed', isLight ? 'text-gray-500' : 'text-muted')}>
-              Automatically generates a new PCAP using the traffic-generation script and analyzes
-              it with the DPI engine. No file upload is required.
+              Automatically generates a new PCAP using the traffic-generation script and analyzes it with the DPI engine. No file upload required.
             </p>
           </div>
+          <button
+            onClick={() => onAnalyzeNewTraffic(blockApp)}
+            disabled={isLoading}
+            className={cn(
+              'flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold flex-shrink-0',
+              'bg-purple hover:bg-purple/80 transition-colors text-white',
+              isLoading && 'opacity-60 cursor-not-allowed',
+            )}
+          >
+            {isLoading
+              ? <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              : <Zap size={12} />}
+            <span>Analyze New Traffic</span>
+          </button>
         </div>
       </div>
+
+      {/* Hidden file input — Analyze PCAP only */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".pcap,.pcapng,.cap"
+        className="hidden"
+        onChange={handleFileChange}
+      />
 
       {/* ── Stat cards ── */}
       <StatCards data={data} status={status} isLight={isLight} />
 
       {/* ── Main visualization + right panels ── */}
       <div className="grid grid-cols-3 gap-4">
-        {/* Traffic viz — 2/3 width */}
         <div className="col-span-2">
-          <TrafficVisualization
-            data={data}
-            glowEnabled={glowEnabled}
-            isLight={isLight}
-            fileName={fileName}
-          />
+          <TrafficVisualization data={data} glowEnabled={glowEnabled} isLight={isLight} fileName={fileName} />
         </div>
-
-        {/* Right column — 1/3 width */}
         <div className="col-span-1 flex flex-col gap-4">
           <DonutChart
             applications={data?.applications ?? []}
@@ -269,30 +347,10 @@ export function Dashboard({
 
       {/* ── 4-up table row ── */}
       <div className="grid grid-cols-4 gap-4">
-        <TopApplicationsTable
-          applications={filteredApps}
-          isLoading={isLoading}
-          isLight={isLight}
-          searchQuery={search}
-        />
-        <TopDomainsTable
-          domains={filteredDomains}
-          isLoading={isLoading}
-          isLight={isLight}
-          searchQuery={search}
-        />
-        <TopTalkersTable
-          talkers={filteredTalkers}
-          isLoading={isLoading}
-          isLight={isLight}
-          searchQuery={search}
-        />
-        <SecurityEventsPanel
-          blockedFlows={blockedFlows}
-          analysisTime={analysisTime}
-          isLoading={isLoading}
-          isLight={isLight}
-        />
+        <TopApplicationsTable applications={filteredApps} isLoading={isLoading} isLight={isLight} searchQuery={search} />
+        <TopDomainsTable domains={filteredDomains} isLoading={isLoading} isLight={isLight} searchQuery={search} />
+        <TopTalkersTable talkers={filteredTalkers} isLoading={isLoading} isLight={isLight} searchQuery={search} />
+        <SecurityEventsPanel blockedFlows={blockedFlows} analysisTime={analysisTime} isLoading={isLoading} isLight={isLight} />
       </div>
 
       {/* ── Recent Flows ── */}
@@ -305,14 +363,8 @@ export function Dashboard({
         onClearSearch={onClearSearch}
       />
 
-      {/* ── Summary cards row ── */}
-      <SummaryCards
-        data={data}
-        glowEnabled={glowEnabled}
-        onGlowToggle={onGlowToggle}
-        rawJson={data}
-        isLight={isLight}
-      />
+      {/* ── Summary cards ── */}
+      <SummaryCards data={data} glowEnabled={glowEnabled} onGlowToggle={onGlowToggle} rawJson={data} isLight={isLight} />
     </div>
   );
 }
