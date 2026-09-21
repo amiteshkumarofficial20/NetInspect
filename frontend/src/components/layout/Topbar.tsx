@@ -1,14 +1,5 @@
 import { useRef, useState } from "react";
-import {
-  Activity,
-  Search,
-  Upload,
-  Bell,
-  Sun,
-  Moon,
-  X,
-  User,
-} from "lucide-react";
+import { Activity, Search, Upload, Zap, Bell, Sun, Moon, X, User } from "lucide-react";
 import type { EngineStatus } from "../../types";
 import { cn } from "../../lib/utils";
 
@@ -17,6 +8,7 @@ interface TopbarProps {
   search: string;
   onSearchChange: (value: string) => void;
   onAnalyze: (file: File, blockApp?: string) => void;
+  onAnalyzeNewTraffic: (blockApp?: string) => void;
   isLoading: boolean;
   isLight: boolean;
   onToggleTheme: () => void;
@@ -50,6 +42,7 @@ export function Topbar({
   search,
   onSearchChange,
   onAnalyze,
+  onAnalyzeNewTraffic,
   isLoading,
   isLight,
   onToggleTheme,
@@ -64,7 +57,6 @@ export function Topbar({
     const file = e.target.files?.[0];
     if (file) {
       onAnalyze(file, blockApp);
-      // Reset so same file can be re-selected
       e.target.value = "";
     }
   };
@@ -74,34 +66,19 @@ export function Topbar({
       className={cn(
         "fixed top-0 left-0 right-0 h-16 z-40 flex items-center px-4 gap-4",
         "border-b border-white/5",
-        isLight ? "bg-white border-gray-200" : "bg-navy-800",
+        isLight ? "bg-white border-gray-200" : "bg-navy-800"
       )}
     >
       {/* ── Logo ── */}
       <div className="flex items-center gap-2.5 w-60 flex-shrink-0">
-        <div
-          className={cn(
-            "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0",
-            "bg-accent/20 shadow-glow-cyan",
-          )}
-        >
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-accent/20 shadow-glow-cyan">
           <Activity size={18} className="text-accent-light" />
         </div>
         <div className="leading-tight">
-          <div
-            className={cn(
-              "font-bold text-sm",
-              isLight ? "text-gray-900" : "text-white",
-            )}
-          >
+          <div className={cn("font-bold text-sm", isLight ? "text-gray-900" : "text-white")}>
             NetInspect
           </div>
-          <div
-            className={cn(
-              "text-[9px] leading-tight",
-              isLight ? "text-gray-400" : "text-muted",
-            )}
-          >
+          <div className={cn("text-[9px] leading-tight", isLight ? "text-gray-400" : "text-muted")}>
             Deep Packet Inspection &amp; Network Intelligence
           </div>
         </div>
@@ -113,7 +90,7 @@ export function Topbar({
           size={14}
           className={cn(
             "absolute left-3 top-1/2 -translate-y-1/2",
-            isLight ? "text-gray-400" : "text-muted",
+            isLight ? "text-gray-400" : "text-muted"
           )}
         />
         <input
@@ -126,7 +103,7 @@ export function Topbar({
             "outline-none focus:ring-1 focus:ring-accent/50",
             isLight
               ? "bg-gray-100 text-gray-900 placeholder:text-gray-400 focus:bg-white border border-gray-200"
-              : "bg-navy-750 text-white placeholder:text-muted/60 focus:bg-navy-700 border border-white/5",
+              : "bg-navy-750 text-white placeholder:text-muted/60 focus:bg-navy-700 border border-white/5"
           )}
         />
       </div>
@@ -138,12 +115,10 @@ export function Topbar({
             "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs border flex-shrink-0",
             isLight
               ? "bg-blue-50 text-blue-700 border-blue-200"
-              : "bg-accent/10 text-accent-light border-accent/25",
+              : "bg-accent/10 text-accent-light border-accent/25"
           )}
         >
-          <span className="max-w-[120px] truncate">
-            Selected: {selectedFile}
-          </span>
+          <span className="max-w-[120px] truncate">Selected: {selectedFile}</span>
           <button
             onClick={onClearFile}
             className="hover:opacity-70 transition-opacity"
@@ -163,19 +138,11 @@ export function Topbar({
           )}
         </div>
         <div className="leading-tight">
-          <div className={cn("text-xs font-semibold", cfg.textColor)}>
-            {cfg.label}
-          </div>
-          <div
-            className={cn(
-              "text-[9px]",
-              isLight ? "text-gray-400" : "text-muted",
-            )}
-          >
-            {cfg.sub}
-          </div>
+          <div className={cn("text-xs font-semibold", cfg.textColor)}>{cfg.label}</div>
+          <div className={cn("text-[9px]", isLight ? "text-gray-400" : "text-muted")}>{cfg.sub}</div>
         </div>
       </div>
+
       {/* ── Block App Selector ── */}
       <select
         value={blockApp}
@@ -186,7 +153,7 @@ export function Topbar({
           "focus:ring-1 focus:ring-accent/50",
           isLight
             ? "bg-white text-gray-700 border-gray-200"
-            : "bg-navy-750 text-white border-white/5",
+            : "bg-navy-750 text-white border-white/5"
         )}
         aria-label="Block application"
       >
@@ -200,15 +167,15 @@ export function Topbar({
         <option value="TikTok">TikTok</option>
         <option value="Spotify">Spotify</option>
       </select>
+
       {/* ── Analyze PCAP Button ── */}
       <button
         onClick={() => fileInputRef.current?.click()}
         disabled={isLoading}
         className={cn(
           "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold flex-shrink-0",
-          "bg-accent hover:bg-accent-dark transition-colors",
-          "text-white shadow-sm",
-          isLoading && "opacity-60 cursor-not-allowed",
+          "bg-accent hover:bg-accent-dark transition-colors text-white shadow-sm",
+          isLoading && "opacity-60 cursor-not-allowed"
         )}
       >
         {isLoading ? (
@@ -224,7 +191,7 @@ export function Topbar({
         )}
       </button>
 
-      {/* Hidden file input */}
+      {/* Hidden file input — ONLY for Analyze PCAP */}
       <input
         ref={fileInputRef}
         type="file"
@@ -233,40 +200,60 @@ export function Topbar({
         onChange={handleFileChange}
       />
 
+      {/* ── Analyze New Traffic Button ── */}
+      <button
+        onClick={() => onAnalyzeNewTraffic(blockApp)}
+        disabled={isLoading}
+        className={cn(
+          "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold flex-shrink-0",
+          "bg-purple hover:bg-purple/80 transition-colors text-white shadow-sm",
+          isLoading && "opacity-60 cursor-not-allowed"
+        )}
+      >
+        {isLoading ? (
+          <>
+            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <span>Generating...</span>
+          </>
+        ) : (
+          <>
+            <Zap size={14} />
+            <span>Analyze New Traffic</span>
+          </>
+        )}
+      </button>
+
       {/* ── Right icons ── */}
       <div className="flex items-center gap-1 flex-shrink-0">
-        {/* Bell */}
         <button
           className={cn(
             "w-8 h-8 flex items-center justify-center rounded-lg transition-colors",
             isLight
               ? "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-              : "text-muted hover:bg-white/5 hover:text-white",
+              : "text-muted hover:bg-white/5 hover:text-white"
           )}
           aria-label="Notifications"
         >
           <Bell size={16} />
         </button>
 
-        {/* Theme toggle */}
         <button
           onClick={onToggleTheme}
           className={cn(
             "w-8 h-8 flex items-center justify-center rounded-lg transition-colors",
             isLight
               ? "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-              : "text-muted hover:bg-white/5 hover:text-white",
+              : "text-muted hover:bg-white/5 hover:text-white"
           )}
           aria-label="Toggle theme"
         >
           {isLight ? <Moon size={16} /> : <Sun size={16} />}
         </button>
 
-        {/* Avatar */}
         <div
           className={cn(
             "w-8 h-8 rounded-full flex items-center justify-center ml-1",
-            "bg-accent/20 text-accent-light border border-accent/30",
+            "bg-accent/20 text-accent-light border border-accent/30"
           )}
         >
           <User size={14} />

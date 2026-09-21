@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { FileText, CheckCircle } from 'lucide-react';
+import { FileText, CheckCircle, Upload, Zap } from 'lucide-react';
 import type { AnalysisResult, AnalysisStatus, DomainCount, TopTalker } from '../types';
 import { StatCards } from '../components/dashboard/StatCards';
 import { TrafficVisualization } from '../components/dashboard/TrafficVisualization';
@@ -178,6 +178,65 @@ export function Dashboard({
               </button>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* ── Info cards: Analyze PCAP | Analyze New Traffic ── */}
+      <div className="grid grid-cols-2 gap-4">
+        {/* Card 1 — Analyze PCAP (blue accent) */}
+        <div
+          className={cn(
+            'flex items-start gap-3 px-4 py-3 rounded-xl border',
+            isLight
+              ? 'bg-white border-gray-200'
+              : 'bg-navy-750 border-white/5',
+          )}
+        >
+          <div
+            className={cn(
+              'w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5',
+              isLight ? 'bg-blue-50' : 'bg-accent/15',
+            )}
+          >
+            <Upload size={18} className="text-accent-light" />
+          </div>
+          <div className="min-w-0">
+            <p className={cn('text-sm font-semibold mb-1', isLight ? 'text-gray-900' : 'text-white')}>
+              Analyze PCAP
+            </p>
+            <p className={cn('text-xs leading-relaxed', isLight ? 'text-gray-500' : 'text-muted')}>
+              Upload any PCAP file to analyze network traffic. This feature is primarily retained
+              for frontend and backend integration testing with sample captures.
+            </p>
+          </div>
+        </div>
+
+        {/* Card 2 — Analyze New Traffic (purple accent) */}
+        <div
+          className={cn(
+            'flex items-start gap-3 px-4 py-3 rounded-xl border',
+            isLight
+              ? 'bg-white border-gray-200'
+              : 'bg-navy-750 border-white/5',
+          )}
+        >
+          <div
+            className={cn(
+              'w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5',
+              isLight ? 'bg-purple-50' : 'bg-purple/15',
+            )}
+          >
+            <Zap size={18} className="text-purple" />
+          </div>
+          <div className="min-w-0">
+            <p className={cn('text-sm font-semibold mb-1', isLight ? 'text-gray-900' : 'text-white')}>
+              Analyze New Traffic
+            </p>
+            <p className={cn('text-xs leading-relaxed', isLight ? 'text-gray-500' : 'text-muted')}>
+              Automatically generates a new PCAP using the traffic-generation script and analyzes
+              it with the DPI engine. No file upload is required.
+            </p>
+          </div>
         </div>
       </div>
 

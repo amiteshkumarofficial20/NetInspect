@@ -1,19 +1,19 @@
-import { useState, useCallback, useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Topbar } from './components/layout/Topbar';
-import { Sidebar } from './components/layout/Sidebar';
-import { Dashboard } from './pages/Dashboard';
-import { StubPage } from './pages/StubPage';
-import { useEngineHealth } from './hooks/useEngineHealth';
-import { useAnalysis } from './hooks/useAnalysis';
-import { cn } from './lib/utils';
+import { useState, useCallback, useEffect } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Topbar } from "./components/layout/Topbar";
+import { Sidebar } from "./components/layout/Sidebar";
+import { Dashboard } from "./pages/Dashboard";
+import { StubPage } from "./pages/StubPage";
+import { useEngineHealth } from "./hooks/useEngineHealth";
+import { useAnalysis } from "./hooks/useAnalysis";
+import { cn } from "./lib/utils";
 
-// ── Persist theme preference ─────────────────────────────────────────────────
+// ── Theme persistence ─────────────────────────────────────────────────────────
 function getInitialTheme(): boolean {
   try {
-    const stored = localStorage.getItem('ni-theme');
-    if (stored) return stored === 'light';
-    return window.matchMedia('(prefers-color-scheme: light)').matches;
+    const stored = localStorage.getItem("ni-theme");
+    if (stored) return stored === "light";
+    return window.matchMedia("(prefers-color-scheme: light)").matches;
   } catch {
     return false;
   }
@@ -22,22 +22,21 @@ function getInitialTheme(): boolean {
 function applyTheme(isLight: boolean) {
   const html = document.documentElement;
   if (isLight) {
-    html.classList.add('light');
-    html.classList.remove('dark');
+    html.classList.add("light");
+    html.classList.remove("dark");
   } else {
-    html.classList.add('dark');
-    html.classList.remove('light');
+    html.classList.add("dark");
+    html.classList.remove("light");
   }
   try {
-    localStorage.setItem('ni-theme', isLight ? 'light' : 'dark');
+    localStorage.setItem("ni-theme", isLight ? "light" : "dark");
   } catch {
     // ignore
   }
 }
 
-// ── App root ─────────────────────────────────────────────────────────────────
+// ── App ───────────────────────────────────────────────────────────────────────
 function AppInner() {
-  // Theme
   const [isLight, setIsLight] = useState<boolean>(getInitialTheme);
   const toggleTheme = useCallback(() => {
     setIsLight((prev) => {
@@ -47,15 +46,12 @@ function AppInner() {
     });
   }, []);
 
-  // Apply theme on mount
   useEffect(() => {
     applyTheme(isLight);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Engine health
   const engineStatus = useEngineHealth();
 
-  // Analysis state machine
   const {
     status,
     data,
@@ -64,40 +60,45 @@ function AppInner() {
     formattedAnalysisTime,
     fileName,
     analyze,
+    analyzeNewTraffic,
     reset,
   } = useAnalysis();
 
-  // Search
-  const [search, setSearch] = useState('');
-  const handleClearSearch = useCallback(() => setSearch(''), []);
+  const [search, setSearch] = useState("");
+  const handleClearSearch = useCallback(() => setSearch(""), []);
 
-  // Glow toggle
   const [glowEnabled, setGlowEnabled] = useState(true);
 
-  // Handle file upload from Topbar
   const handleAnalyze = useCallback(
-  (file: File, blockApp?: string) => {
-    setSearch('');
-    analyze(file, blockApp);
-  },
-  [analyze],
-);
+    (file: File, blockApp?: string) => {
+      setSearch("");
+      analyze(file, blockApp);
+    },
+    [analyze]
+  );
 
-  // Handle chip clear
+  const handleAnalyzeNewTraffic = useCallback(
+    (blockApp?: string) => {
+      setSearch("");
+      analyzeNewTraffic(blockApp);
+    },
+    [analyzeNewTraffic]
+  );
+
   const handleClearFile = useCallback(() => {
     reset();
-    setSearch('');
+    setSearch("");
   }, [reset]);
 
   return (
-    <div className={cn('flex flex-col h-screen', isLight ? 'bg-gray-100' : 'bg-navy-900')}>
-      {/* Fixed top bar */}
+    <div className={cn("flex flex-col h-screen", isLight ? "bg-gray-100" : "bg-navy-900")}>
       <Topbar
         engineStatus={engineStatus}
         search={search}
         onSearchChange={setSearch}
         onAnalyze={handleAnalyze}
-        isLoading={status === 'loading'}
+        onAnalyzeNewTraffic={handleAnalyzeNewTraffic}
+        isLoading={status === "loading"}
         isLight={isLight}
         onToggleTheme={toggleTheme}
         selectedFile={fileName}
@@ -105,14 +106,12 @@ function AppInner() {
       />
 
       <div className="flex flex-1 overflow-hidden pt-16">
-        {/* Fixed sidebar */}
         <Sidebar isLight={isLight} />
 
-        {/* Main scrollable content */}
         <main
           className={cn(
-            'flex-1 overflow-y-auto pl-60',
-            isLight ? 'bg-gray-100' : 'bg-navy-900',
+            "flex-1 overflow-y-auto pl-60",
+            isLight ? "bg-gray-100" : "bg-navy-900"
           )}
         >
           <div className="p-5 min-w-[1024px]">
@@ -135,13 +134,13 @@ function AppInner() {
                   />
                 }
               />
-              <Route path="/pcap"         element={<StubPage isLight={isLight} />} />
+              <Route path="/pcap" element={<StubPage isLight={isLight} />} />
               <Route path="/applications" element={<StubPage isLight={isLight} />} />
-              <Route path="/domains"      element={<StubPage isLight={isLight} />} />
-              <Route path="/flows"        element={<StubPage isLight={isLight} />} />
-              <Route path="/rules"        element={<StubPage isLight={isLight} />} />
-              <Route path="/reports"      element={<StubPage isLight={isLight} />} />
-              <Route path="/settings"     element={<StubPage isLight={isLight} />} />
+              <Route path="/domains" element={<StubPage isLight={isLight} />} />
+              <Route path="/flows" element={<StubPage isLight={isLight} />} />
+              <Route path="/rules" element={<StubPage isLight={isLight} />} />
+              <Route path="/reports" element={<StubPage isLight={isLight} />} />
+              <Route path="/settings" element={<StubPage isLight={isLight} />} />
             </Routes>
           </div>
         </main>
