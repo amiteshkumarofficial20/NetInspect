@@ -620,24 +620,14 @@ export function TrafficVisualization({
         </div>
 
         {remaining > 0 && (
-          <div className="flex items-center gap-2">
-            <span
-              className={cn(
-                "text-xs",
-                isLight ? "text-gray-400" : "text-muted",
-              )}
-            >
-              ••• +{remaining} more
-            </span>
-
-            <button
-              type="button"
-              onClick={() => setIsExpanded(true)}
-              className="text-xs font-medium text-accent hover:underline"
-            >
-              View All →
-            </button>
-          </div>
+          <span
+            className={cn(
+              "text-xs",
+              isLight ? "text-gray-400" : "text-muted",
+            )}
+          >
+            ••• +{remaining} more
+          </span>
         )}
       </div>
 

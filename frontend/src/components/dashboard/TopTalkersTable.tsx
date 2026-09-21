@@ -35,9 +35,6 @@ export function TopTalkersTable({
         <h3 className={cn('font-semibold text-sm', isLight ? 'text-gray-900' : 'text-white')}>
           Top Talkers (Source IPs)
         </h3>
-        <button onClick={onViewAll} className="text-xs text-accent-light hover:underline">
-          View All →
-        </button>
       </div>
 
       <table className="w-full">

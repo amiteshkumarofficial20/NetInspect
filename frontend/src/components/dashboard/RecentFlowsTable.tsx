@@ -73,12 +73,14 @@ export function RecentFlowsTable({
             </span>
           )}
         </h3>
-        <button
-          onClick={isFiltered ? onClearSearch : onViewAll}
-          className="text-xs text-accent-light hover:underline transition-colors"
-        >
-          {isFiltered ? 'Clear Search →' : 'View All →'}
-        </button>
+        {isFiltered && (
+          <button
+            onClick={onClearSearch}
+            className="text-xs text-accent-light hover:underline transition-colors"
+          >
+            Clear Search →
+          </button>
+        )}
       </div>
 
       {/* Column headers */}
