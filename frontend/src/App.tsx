@@ -55,8 +55,8 @@ function AppInner() {
 
   return (
     <div className={cn('flex flex-col h-screen', isLight ? 'bg-gray-100' : 'bg-navy-900')}>
-      {/* Topbar: logo only */}
-      <Topbar isLight={isLight} />
+      {/* Topbar: logo + title/subtitle + theme toggle */}
+      <Topbar isLight={isLight} onToggleTheme={toggleTheme} />
 
       <div className="flex flex-1 overflow-hidden pt-16">
         <Sidebar isLight={isLight} />
@@ -84,7 +84,6 @@ function AppInner() {
                     onAnalyze={handleAnalyze}
                     onAnalyzeNewTraffic={handleAnalyzeNewTraffic}
                     isLoading={status === 'loading'}
-                    onToggleTheme={toggleTheme}
                   />
                 }
               />
