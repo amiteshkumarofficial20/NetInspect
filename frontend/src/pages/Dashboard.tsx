@@ -163,7 +163,7 @@ export function Dashboard({
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder="Search applications, domains, IPs, or flows..."
               className={cn(
-                'w-full h-9 pl-9 pr-4 rounded-xl text-sm outline-none transition-colors',
+                'w-full h-10 pl-9 pr-4 rounded-xl text-sm outline-none transition-colors',
                 'focus:ring-1 focus:ring-accent/50',
                 isLight
                   ? 'bg-gray-100 text-gray-900 placeholder:text-gray-400 border border-gray-200 focus:bg-white'
@@ -178,7 +178,7 @@ export function Dashboard({
             onChange={(e) => setBlockApp(e.target.value)}
             disabled={isLoading}
             className={cn(
-              'h-9 px-3 rounded-xl text-xs font-medium border outline-none flex-shrink-0',
+              'h-[50px] w-48 px-3.5 rounded-xl text-xs font-medium border outline-none flex-shrink-0 cursor-pointer',
               'focus:ring-1 focus:ring-accent/50',
               isLight ? 'bg-white text-gray-700 border-gray-200' : 'bg-navy-750 text-white border-white/5',
             )}
@@ -190,33 +190,46 @@ export function Dashboard({
           </select>
 
           {/* Last Analyzed File card */}
-          <div className={cn('ni-card px-3 py-2 flex items-center gap-3 flex-shrink-0')}>
-            <div className={cn('w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0', isLight ? 'bg-blue-50' : 'bg-accent/10')}>
+          <div
+            className={cn(
+              'ni-card h-[50px] w-[390px] px-3.5 flex items-center gap-3 flex-shrink-0',
+            )}
+          >
+            <div
+              className={cn(
+                'w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0',
+                isLight ? 'bg-blue-50' : 'bg-accent/10',
+              )}
+            >
               <FileText size={14} className="text-accent-light" />
             </div>
-            <div className="min-w-0">
-              <p className={cn('text-[9px] mb-0.5', isLight ? 'text-gray-400' : 'text-muted')}>Last Analyzed</p>
-              <p className={cn('text-xs font-semibold truncate max-w-[140px]', isLight ? 'text-gray-800' : 'text-white')}>
+            <div className="min-w-0 flex-1">
+              <p className={cn('text-[9px] leading-tight mb-0.5', isLight ? 'text-gray-400' : 'text-muted')}>
+                Last Analyzed
+              </p>
+              <p className={cn('text-xs font-semibold truncate leading-tight', isLight ? 'text-gray-800' : 'text-white')}>
                 {fileName ?? 'No file analyzed'}
               </p>
-              <p className={cn('text-[9px]', isLight ? 'text-gray-400' : 'text-muted')}>
+              <p className={cn('text-[9px] leading-tight mt-0.5 whitespace-nowrap', isLight ? 'text-gray-400' : 'text-muted')}>
                 {formattedAnalysisTime ?? '—'}
               </p>
             </div>
             {status === 'success' && (
-              <div className="flex flex-col items-end gap-1 ml-1">
-                <Badge variant="complete">
-                  <CheckCircle size={9} className="mr-1" />
+              <div className="flex flex-col items-end justify-center gap-0.5 flex-shrink-0 ml-2">
+                <Badge variant="complete" className="text-[9px] py-0.5 px-2 whitespace-nowrap">
+                  <CheckCircle size={8} className="mr-1" />
                   Analysis Complete
                 </Badge>
-                <button className="text-[10px] text-accent-light hover:underline">View Report →</button>
+                <button className="text-[10px] text-accent-light hover:underline font-medium whitespace-nowrap">
+                  View Report →
+                </button>
               </div>
             )}
           </div>
         </div>
 
         {/* Right item: Engine status */}
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-2.5 px-4 min-w-[140px] flex-shrink-0">
           <div className="relative">
             <span className={cn('block w-2 h-2 rounded-full', eng.dot)} />
             {engineStatus === 'online' && (
